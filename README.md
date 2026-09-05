@@ -14,6 +14,43 @@ There's no single right answer — it's a **per-component decision**, not an all
 
 ---
 
+## What You're Actually Building: AnyCompany Shop's Customer Service Agent
+
+Underneath all the infrastructure comparison, this repo builds **one concrete application**: an AI customer service agent for a fictional online retail store, **AnyCompany Shop**. Every module adds one new capability to the *same* agent — by the end of either track, you have a fully-featured support bot, not just a tech demo.
+
+### What the finished agent can actually do
+
+Ask it things like a real customer would, and it handles them end to end:
+
+- **"Where is my order ORD-12345?"** — looks up live order status, tracking, and shipping details
+- **"I want to return the headphones from order ORD-11111"** — checks the order's status first, and correctly *refuses* the return if the order hasn't shipped yet (not a hardcoded "yes" to everything)
+- **"Do you have any noise cancelling headphones under $100?"** — searches the actual product catalog by meaning, not just keyword match
+- **"Has it shipped yet?"** (as a follow-up, with no order number repeated) — remembers the order ID from a few messages earlier in the same conversation
+- **"What do people who bought the Laptop Pro 15 usually buy with it?"** — answers a genuine cross-customer recommendation question by traversing purchase relationships, not by looking anything up in a single record
+- **"I want to total up what I spent on orders ORD-12345 and ORD-67890"** — pulls both orders' data, then actually runs the arithmetic in a sandboxed code interpreter rather than letting the LLM guess at math
+- **"Compare the price of the mouse I bought with this Amazon listing: [URL]"** — fetches a live external webpage and compares it against internal order data
+
+None of this is scripted dialogue — the LLM decides which tool(s) to call based on what's actually asked, and gracefully handles the failure paths too (e.g. asking about an order ID that doesn't exist).
+
+### How the agent evolves, module by module
+
+The agent starts as a bare conversational loop and gains one capability per lab — this is true in **both** tracks, with the same progression:
+
+| Stage | Capability added |
+|---|---|
+| Core agent | Receives a query, reasons, responds — one tool (`lookup_order`) |
+| + Observability | Every LLM call and tool call becomes traceable/debuggable |
+| + Product knowledge | Can answer catalog/FAQ questions grounded in real data, not guesses |
+| + Session memory | Carries context across multiple messages in one conversation |
+| + Networked tools | Order/inventory/returns logic moves off the agent's own hardcoded mock data onto a proper tool server |
+| + Multi-agent | Splits into an Order specialist and a Product (or Sandbox) specialist, coordinated by an orchestrator |
+| + Evaluation | Every conversation gets automatically scored for accuracy, helpfulness, and safety |
+| + Knowledge graph *(self-managed only)* | Gains multi-hop reasoning ("what do people who bought X also buy?") that no single lookup or vector search could answer |
+
+By the last module in either track, you have a customer service agent that: looks up orders, answers product questions from a real catalog, remembers the conversation, safely runs code and browses the web when needed, is composed of coordinated specialists rather than one overloaded prompt, and is continuously graded on quality — built once, then rebuilt on a different backend to see exactly what changes and what doesn't.
+
+---
+
 ## The Three Strategies
 
 | | Self-Managed | Integrated | Fully Managed |
