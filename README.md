@@ -134,6 +134,14 @@ Each numbered folder is self-contained: `agent.py`, `tools.py`, `Dockerfile`, `k
 
 ---
 
+## Video Walkthrough
+
+Here's a walkthrough of implemented required features:
+
+<img src='https://imgur.com/a/VR4VE4k.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+
+---
+
 ## License
 
 See [`LICENSE`](LICENSE).
