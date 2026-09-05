@@ -1,26 +1,28 @@
 # Amazon EKS AI Agents
 
-Hands-on reference implementation for deploying **agentic AI systems on Amazon EKS** using three deployment strategies: fully self-managed (open source, on Kubernetes), integrated (self-hosted orchestration + AWS managed backends), and fully managed (all AWS services). Built from an AWS Workshop Studio lab, restructured here as a standalone, reusable repo.
+I built this project to answer a question I kept running into while designing agent infrastructure on AWS: **should an AI agent's model, memory, tools, and observability run on your own Kubernetes cluster, or on AWS managed services — and does that have to be an all-or-nothing decision?**
 
-> **Audience:** Cloud / GenAI Solutions Architects, ML platform engineers, and anyone evaluating "build vs. buy" trade-offs for agent infrastructure on AWS.
+To find out, I built the **same production-style customer service agent three different ways**: fully self-managed on open-source infrastructure, an integrated approach mixing self-hosted orchestration with AWS managed backends, and a fully-managed approach using AWS services end-to-end. All three run on Amazon EKS, use the same agent framework (Strands SDK), and are traced through the same observability stack — so the code, not just the architecture diagram, shows exactly what changes and what doesn't when you swap a backend.
+
+> **What this demonstrates:** hands-on experience with agentic AI architecture on AWS — Amazon Bedrock, AgentCore (Memory, Code Interpreter, Browser, Evaluations), EKS, vLLM on Inferentia, Milvus, Neo4j, MCP, A2A multi-agent orchestration, and LLM observability/evaluation with Langfuse — applied to a real, working application rather than isolated snippets.
 
 ---
 
-## Why this repo exists
+## Why I built it this way
 
 Every team building AI agents eventually asks: *"Should we run our own model servers, or use Bedrock? Our own vector DB, or AgentCore Memory? Our own tool protocol, or a managed sandbox?"*
 
-There's no single right answer — it's a **per-component decision**, not an all-or-nothing platform choice. This repo demonstrates the **same customer-service agent** built three different ways, so you can compare real code, real trade-offs, and real operational overhead side by side.
+I wanted to prove to myself there's no single right answer — it's a **per-component decision**, not an all-or-nothing platform choice. So instead of writing that as a slide, I built the **same customer-service agent three different ways** and kept both working versions in this repo, so the trade-offs are visible in real code, not just theory.
 
 ---
 
-## What You're Actually Building: AnyCompany Shop's Customer Service Agent
+## What I Built: AnyCompany Shop's Customer Service Agent
 
-Underneath all the infrastructure comparison, this repo builds **one concrete application**: an AI customer service agent for a fictional online retail store, **AnyCompany Shop**. Every module adds one new capability to the *same* agent — by the end of either track, you have a fully-featured support bot, not just a tech demo.
+Underneath the infrastructure comparison is one concrete application: an AI customer service agent for a fictional online retail store I called **AnyCompany Shop**. Each module adds one new capability to the *same* agent — by the end of either track, it's a fully-featured support bot, not just a tech demo.
 
 ### What the finished agent can actually do
 
-Ask it things like a real customer would, and it handles them end to end:
+I tested it with real customer-style queries end to end:
 
 - **"Where is my order ORD-12345?"** — looks up live order status, tracking, and shipping details
 - **"I want to return the headphones from order ORD-11111"** — checks the order's status first, and correctly *refuses* the return if the order hasn't shipped yet (not a hardcoded "yes" to everything)
@@ -30,11 +32,11 @@ Ask it things like a real customer would, and it handles them end to end:
 - **"I want to total up what I spent on orders ORD-12345 and ORD-67890"** — pulls both orders' data, then actually runs the arithmetic in a sandboxed code interpreter rather than letting the LLM guess at math
 - **"Compare the price of the mouse I bought with this Amazon listing: [URL]"** — fetches a live external webpage and compares it against internal order data
 
-None of this is scripted dialogue — the LLM decides which tool(s) to call based on what's actually asked, and gracefully handles the failure paths too (e.g. asking about an order ID that doesn't exist).
+None of this is scripted dialogue — the LLM decides which tool(s) to call based on what's actually asked, and I made sure it handles the failure paths gracefully too (e.g. asking about an order ID that doesn't exist).
 
-### How the agent evolves, module by module
+### How I evolved the agent, module by module
 
-The agent starts as a bare conversational loop and gains one capability per lab — this is true in **both** tracks, with the same progression:
+I started with a bare conversational loop and added one capability at a time — the same progression in **both** tracks:
 
 | Stage | Capability added |
 |---|---|
@@ -47,7 +49,18 @@ The agent starts as a bare conversational loop and gains one capability per lab 
 | + Evaluation | Every conversation gets automatically scored for accuracy, helpfulness, and safety |
 | + Knowledge graph *(self-managed only)* | Gains multi-hop reasoning ("what do people who bought X also buy?") that no single lookup or vector search could answer |
 
-By the last module in either track, you have a customer service agent that: looks up orders, answers product questions from a real catalog, remembers the conversation, safely runs code and browses the web when needed, is composed of coordinated specialists rather than one overloaded prompt, and is continuously graded on quality — built once, then rebuilt on a different backend to see exactly what changes and what doesn't.
+By the last module in either track, the agent looks up orders, answers product questions from a real catalog, remembers the conversation, safely runs code and browses the web when needed, is composed of coordinated specialists rather than one overloaded prompt, and is continuously graded on quality — built once, then rebuilt on a different backend to prove exactly what changes and what doesn't.
+
+---
+
+## Skills Demonstrated
+
+- **Cloud infrastructure:** Amazon EKS (Auto Mode), Terraform, IAM/Pod Identity, VPC networking, ECR
+- **GenAI / ML infrastructure:** Amazon Bedrock, AgentCore (Memory, Code Interpreter, Browser, Evaluations, Gateway), vLLM on AWS Inferentia
+- **Agent engineering:** Strands Agents SDK, tool-calling design, multi-agent orchestration (A2A protocol), Model Context Protocol (MCP)
+- **Data systems:** Milvus (vector search / RAG), Neo4j (knowledge graphs, Cypher), embedding pipelines (fastembed)
+- **Observability & quality:** OpenTelemetry instrumentation, Langfuse, LLM-as-a-Judge evaluation design (custom + managed evaluators)
+- **Platform engineering practices:** Kubernetes manifests, Docker multi-stage builds, CI-style build/push/deploy workflows, Infrastructure-as-Code hygiene
 
 ---
 
@@ -66,7 +79,7 @@ By the last module in either track, you have a customer service agent that: look
 | **Ops burden** | Highest (you run everything) | Medium (K8s + managed mix) | Lowest |
 | **Best for** | Custom models, data residency, existing K8s teams | Own the agent logic, offload infra-heavy pieces | Ship fast, no custom model needs |
 
-This repo contains full working code + labs for **Self-Managed** and **Integrated**. See [`docs/GUIDE.md`](docs/GUIDE.md) for the full decision framework, including Fully Managed.
+I implemented full working code for **Self-Managed** and **Integrated**. See [`docs/GUIDE.md`](docs/GUIDE.md) for the full decision framework, including Fully Managed.
 
 ---
 
@@ -141,7 +154,7 @@ Amazon-EKS-AI-Agents/
 │   └── 550-evaluation-agentcore/    ← AgentCore Evaluations (managed LLM-as-a-Judge)
 ```
 
-Each numbered folder is self-contained: `agent.py`, `tools.py`, `Dockerfile`, `k8s.yaml`, and a lab-specific `README.md` with the exact commands to build/deploy/test it. Copy any single folder out and it should stand alone.
+Each numbered folder is self-contained: `agent.py`, `tools.py`, `Dockerfile`, `k8s.yaml`, and a module-specific `README.md` with the exact commands to build/deploy/test it. Copy any single folder out and it should stand alone.
 
 ---
 
@@ -151,7 +164,7 @@ Each numbered folder is self-contained: `agent.py`, `tools.py`, `Dockerfile`, `k
 
 **Weekend deep-dive:** Start at `self-managed/100-model-plane/`, work top to bottom through `self-managed/`, then repeat the same journey in `integrated/` and diff the two `agent.py` files at each step — the deltas are the lesson.
 
-**If you're running this on AWS Workshop Studio:** the underlying infra (EKS cluster, VPC, LiteLLM proxy, IAM, Milvus/Neo4j/Langfuse Helm releases) is provisioned by the workshop's Terraform and is **not** included in this repo — this repo holds the *application layer* (agent code, tool definitions, Kubernetes manifests, seed scripts) that runs on top of it. See [`docs/COMMANDS.md`](docs/COMMANDS.md) for the full command sequence per module.
+**Running it yourself:** the underlying infra (EKS cluster, VPC, LiteLLM proxy, IAM, Milvus/Neo4j/Langfuse Helm releases) is provisioned separately via the `terraform/` folder in this repo. This repo's `self-managed/` and `integrated/` folders hold the *application layer* — agent code, tool definitions, Kubernetes manifests, and seed scripts — that runs on top of that infrastructure. See [`docs/COMMANDS.md`](docs/COMMANDS.md) for the full command sequence per module.
 
 ---
 
